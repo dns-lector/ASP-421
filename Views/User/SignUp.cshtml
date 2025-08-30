@@ -16,16 +16,28 @@ else
     @Html.DisplayFor(m => Model.FormModel);
 }
 
-@{
+@if (Model.FormModel != null && Model.ValidationErrors?.Count == 0)
+{
+    <div class="alert alert-success" role="alert">
+        Ви успішно зареєстровані!
+    </div>
+}
+else 
+{
     bool wasValidated = Model.ValidationErrors != null;
     String validityClass;
     String invalidFeedback;
     String key;
     bool hasKey;
-}
 
 <form asp-action="Register" method="post">
-    <div class="row">
+        @if (Model.ValidationErrors?.ContainsKey(nameof(Model.ValidationErrors)) ?? false )
+        {
+            <div class="alert alert-danger" role="alert">
+                @Model.ValidationErrors[nameof(Model.ValidationErrors)]
+            </div>
+        }
+        <div class="row">
         <div class="col">
             <div class="input-group mb-3">
                 <span class="input-group-text" id="user-name-addon">
@@ -120,3 +132,4 @@ else
     </div>
     <button type="submit" class="btn btn-success">Реєстрація</button>
 </form>
+}

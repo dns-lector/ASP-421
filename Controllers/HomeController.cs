@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using ASP_421.Models;
+using ASP_421.Services.Kdf;
 using ASP_421.Services.Random;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,11 +10,13 @@ namespace ASP_421.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly IRandomService _randomService;
+        private readonly IKdfService _kdfService;
 
-        public HomeController(ILogger<HomeController> logger, IRandomService randomService)
+        public HomeController(ILogger<HomeController> logger, IRandomService randomService, IKdfService kdfService)
         {
             _logger = logger;
             _randomService = randomService;
+            _kdfService = kdfService;
         }
 
         public IActionResult Index()
@@ -23,7 +26,7 @@ namespace ASP_421.Controllers
 
         public IActionResult IoC()
         {
-            ViewData["otp"] = _randomService.Otp(6);
+            ViewData["otp"] = _kdfService.Dk("Admin", "4FA5D20B-E546-4818-9381-B4BD9F327F4E"); // _randomService.Otp(6);
             return View();
         }
 

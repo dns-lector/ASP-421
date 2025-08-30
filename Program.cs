@@ -1,4 +1,7 @@
+using ASP_421.Data;
+using ASP_421.Services.Kdf;
 using ASP_421.Services.Random;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -6,6 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<IRandomService, DefaultRandomService>();
+builder.Services.AddSingleton<IKdfService, PbKdf1Service>();
+
+builder.Services.AddDbContext<DataContext>(options => 
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("DataContext"))
+);
 
 builder.Services.AddDistributedMemoryCache();
 

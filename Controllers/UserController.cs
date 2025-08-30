@@ -1,11 +1,18 @@
-﻿using ASP_421.Models.User;
+﻿using ASP_421.Data;
+using ASP_421.Models.User;
+using ASP_421.Services.Kdf;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
 namespace ASP_421.Controllers
 {
-    public class UserController : Controller
+    public class UserController(
+        DataContext dataContext, 
+        IKdfService kdfService) : Controller
     {
+        private readonly DataContext _dataContext = dataContext;
+        private readonly IKdfService _kdfService = kdfService;
+
         const String RegisterKey = "RegisterFormModel";
 
         public IActionResult SignUp()
@@ -20,6 +27,40 @@ namespace ASP_421.Controllers
 
                 viewModel.FormModel = formModel;
                 viewModel.ValidationErrors = ValidateSignupForm(formModel);
+
+                if(viewModel.ValidationErrors.Count == 0)
+                {
+                    Data.Entities.User user = new()
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = formModel.Name,
+                        Email = formModel.Email,
+                        Birthdate = formModel.Birthday,
+                        RegisteredAt = DateTime.Now,
+                        DeletedAt = null,
+                    };
+                    String salt = Guid.NewGuid().ToString();
+                    Data.Entities.UserAccess userAccess = new()
+                    {
+                        Id = Guid.NewGuid(),
+                        UserId = user.Id,
+                        RoleId = "Guest",
+                        Login = formModel.Login,
+                        Salt = salt,
+                        Dk = _kdfService.Dk(formModel.Password, salt),
+                    };
+                    _dataContext.Users.Add(user);
+                    _dataContext.UserAccesses.Add(userAccess);
+                    try
+                    {
+                        _dataContext.SaveChanges();
+                    }
+                    catch (Exception ex)
+                    {
+                        viewModel
+                            .ValidationErrors[nameof(viewModel.ValidationErrors)] = ex.Message;
+                    }
+                }
 
                 HttpContext.Session.Remove(RegisterKey);
             }
@@ -47,6 +88,10 @@ namespace ASP_421.Controllers
             if (formModel.Login?.Contains(':') ?? false)
             {
                 res[nameof(formModel.Login)] = "У логіні не допускається ':' (двокрапка)";
+            }
+            else if(_dataContext.UserAccesses.Any(ua => ua.Login == formModel.Login))
+            {
+                res[nameof(formModel.Login)] = "Логін вже у вжитку";
             }
             if (formModel.Password != formModel.Repeat)
             {
