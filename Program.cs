@@ -1,4 +1,5 @@
 using ASP_421.Data;
+using ASP_421.Middleware;
 using ASP_421.Services.Kdf;
 using ASP_421.Services.Random;
 using Microsoft.EntityFrameworkCore;
@@ -20,7 +21,7 @@ builder.Services.AddDistributedMemoryCache();
 
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromSeconds(10);
+    options.IdleTimeout = TimeSpan.FromMinutes(15);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
 });
@@ -44,6 +45,10 @@ app.UseSession();
 
 app.MapStaticAssets();
 
+
+app.UseAuthSession();
+
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
@@ -51,3 +56,14 @@ app.MapControllerRoute(
 
 
 app.Run();
+
+/* Д.З. Реалізувати вимогу безпеки щодо логування усіх викликів ресурсу
+ * (заходів на сайт)
+ * - описати сутність даних з параметрами
+ *  = час
+ *  = адреса звернення (/Home/Privacy)
+ *  = логін користувача
+ *  = статус відповіді
+ * - впровадити міграцію, оновити БД
+ * - додати до HomeController коди відповідного логування
+ */

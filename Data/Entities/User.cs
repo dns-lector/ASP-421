@@ -1,4 +1,6 @@
-﻿namespace ASP_421.Data.Entities
+﻿using System.Text.Json.Serialization;
+
+namespace ASP_421.Data.Entities
 {
     public class User
     {
@@ -10,6 +12,7 @@
         public DateTime? DeletedAt    { get; set; }
 
         // Inverse Navi props
+        [JsonIgnore]
         public List<UserAccess> Accesses { get; set; } = new();
     }
 }

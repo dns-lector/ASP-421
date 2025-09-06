@@ -2,6 +2,8 @@
 using ASP_421.Models.User;
 using ASP_421.Services.Kdf;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Text;
 using System.Text.Json;
 
 namespace ASP_421.Controllers
@@ -14,6 +16,72 @@ namespace ASP_421.Controllers
         private readonly IKdfService _kdfService = kdfService;
 
         const String RegisterKey = "RegisterFormModel";
+
+        public JsonResult SignIn()
+        {
+            // Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+
+            String header = // Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+                HttpContext.Request.Headers.Authorization.ToString();
+            if (String.IsNullOrEmpty(header))
+            {
+                return Json(new { 
+                    Status = 401, 
+                    Data = "Missing Authorization header" });
+            }
+            String scheme = "Basic ";
+            if(!header.StartsWith(scheme))
+            {
+                return Json(new
+                {
+                    Status = 401,
+                    Data = "Invalid scheme. Required: " + scheme 
+                });
+            }
+            String credentials =   // QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+                header[scheme.Length..];
+
+            String userPass =      // Aladdin:open sesame
+                Encoding.UTF8.GetString(
+                    Convert.FromBase64String(credentials));
+
+            String[] parts = userPass.Split(':', 2);
+            String login = parts[0];     // Aladdin
+            String password = parts[1];  // open sesame
+
+            var userAccess = _dataContext
+                .UserAccesses
+                .AsNoTracking()           // не моніторити зміни -- тільки читання
+                .Include(ua => ua.User)   // заповнення навігаційної властивості
+                .FirstOrDefault(ua => ua.Login == login);
+
+            if (userAccess == null)
+            {
+                return Json(new
+                {
+                    Status = 401,
+                    Data = "Credentials rejected"
+                });
+            }
+            if(_kdfService.Dk(password, userAccess.Salt) != userAccess.Dk)
+            {
+                return Json(new
+                {
+                    Status = 401,
+                    Data = "Credentials rejected."
+                });
+            }
+            // користувач пройшов автентифікацію, зберігаємо у сесії
+            HttpContext.Session.SetString(
+                "SignIn",
+                JsonSerializer.Serialize(userAccess));
+
+            return Json(new
+            {
+                Status = 200,
+                Data = "Authorized"
+            });
+        }
 
         public IActionResult SignUp()
         {
