@@ -34,6 +34,7 @@ namespace ASP_421.Middleware
                             new Claim(ClaimTypes.Name, userAccess.User.Name),
                             new Claim(ClaimTypes.Email, userAccess.User.Email),
                             new Claim("Id", userAccess.User.Id.ToString()),
+                            new Claim(ClaimTypes.NameIdentifier, userAccess.Login),
                         ],
                         nameof(AuthSessionMiddleware)
                     )

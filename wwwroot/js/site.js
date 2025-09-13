@@ -40,3 +40,20 @@ document.addEventListener('submit', e => {
         console.log(login, password, credentials);
     }
 });
+
+document.addEventListener('DOMContentLoaded', e => {
+    let btn = document.getElementById("btn-profile-edit");
+    if (btn) btn.onclick = btnProfileEditClick;
+    btn = document.getElementById("btn-profile-delete");
+    if (btn) btn.onclick = btnProfileDeleteClick;
+});
+
+function btnProfileEditClick() {
+    for (let elem of document.querySelectorAll("[data-editable]")) {
+        elem.setAttribute("contenteditable", true);
+    }
+}
+
+function btnProfileDeleteClick() {
+
+}

@@ -1,0 +1,50 @@
+﻿@model ASP_421.Models.User.UserProfileViewModel
+@{
+    ViewData["Title"] = "User Profile";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Персональний кабінет</h1>
+</div>
+
+@if(Model.User == null)
+{
+    <div class="alert alert-danger" role="alert">
+		Профіля не існує або користувач видалив свій профіль.
+    </div>
+}
+else {
+    <div class="row mb-2">
+        <div class="col text-end">
+            <strong>Ім'я:</strong>
+        </div>
+        <div class="col text-start" data-editable="Name">
+            @Model.User.Name
+		</div>
+    </div>
+    <div class="row mb-2">
+        <div class="col text-end">
+            <strong>E-mail:</strong>
+        </div>
+        <div class="col text-start" data-editable="Email">
+            @Model.User.Email
+		</div>
+    </div>
+    if(Model.IsPersonal)
+    {
+        <div class="row mb-2">
+            <div class="col text-end">
+                <strong>Дата народження:</strong>
+            </div>
+            <div class="col text-start">
+				@Model.User.Birthdate?.ToString("dd.MM.yyyy")
+            </div>
+        </div>
+
+		<div class="row">
+			<div class="col text-end"><button id="btn-profile-delete" class="btn btn-danger">Delete</button></div>
+			<div class="col text-start"><button id="btn-profile-edit" class="btn btn-warning">Edit</button></div>
+        </div>
+
+    }
+}

@@ -17,6 +17,29 @@ namespace ASP_421.Controllers
 
         const String RegisterKey = "RegisterFormModel";
 
+        public IActionResult Profile([FromRoute] String id)
+        {
+            UserProfileViewModel viewModel = new();
+
+            viewModel.User = _dataContext
+                .UserAccesses
+                .Include(ua => ua.User)
+                .AsNoTracking()    
+                .FirstOrDefault(ua => ua.Login == id)
+                ?.User;
+
+            String? authUserId = HttpContext
+                .User
+                .Claims
+                .FirstOrDefault(c => c.Type == "Id")
+                ?.Value;
+
+            viewModel.IsPersonal = authUserId != null &&
+                authUserId == viewModel.User?.Id.ToString();
+
+            return View(viewModel);
+        }
+
         public JsonResult SignIn()
         {
             // Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==

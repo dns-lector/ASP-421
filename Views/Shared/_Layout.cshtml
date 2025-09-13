@@ -38,9 +38,15 @@
                             .Claims
                             .First(c => c.Type == ClaimTypes.Name)
                             .Value;
-
+                        String login = Context.User
+                            .Claims
+                            .First(c => c.Type == ClaimTypes.NameIdentifier)
+                            .Value;
                         <div>
-                            <b title="@name">@(name[0])</b>
+                            <a asp-controller="User"
+                               asp-action="Profile"
+                               asp-route-id="@login"
+                               class="rounded-circle bg-info px-2 py-1 mx-2 text-decoration-none text-body" title="@name">@(name[0])</a>
                             <a class="btn btn-outline-secondary" href="?logout" >
                                 <i class="bi bi-box-arrow-right"></i>
                             </a>
