@@ -49,9 +49,56 @@ document.addEventListener('DOMContentLoaded', e => {
 });
 
 function btnProfileEditClick() {
-    for (let elem of document.querySelectorAll("[data-editable]")) {
-        elem.setAttribute("contenteditable", true);
+    const elements = document.querySelectorAll("[data-editable]");
+    if (elements.length == 0) {
+        console.error("Empty [data-editable], returned");
+        return;
     }
+    if (elements[0].hasAttribute("contenteditable")) {
+        let changes = {};
+        let wasChanges = false;
+        for (let elem of elements) {
+            elem.removeAttribute("contenteditable");
+            if (elem.originText != elem.innerText) {
+                changes[elem.getAttribute("data-editable")] = elem.innerText;
+                wasChanges = true;
+            }
+        }
+        if (wasChanges) {
+            if (confirm("Підтверджуєте внесення змін ? " + JSON.stringify(changes))) {
+                console.log(changes);
+
+                fetch("/User/Update", {
+                    method: "PATCH",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(changes)
+                }).then(r => r.json()).then(j => {
+                    if (j.status == 200) {
+                        alert("Дані оновлено");
+                    }
+                    else {
+                        alert("Помилка оновлення: " + j.data);
+                    }
+                });
+
+            }
+            else {
+                for (let elem of elements) {
+                    elem.innerText = elem.originText;
+                }
+            }
+        }
+    }
+    else {
+        for (let elem of elements) {
+            elem.setAttribute("contenteditable", true);
+            // зберігаємо значення, що було перед редагуванням
+            elem.originText = elem.innerText;
+        }
+    }
+    
 }
 
 function btnProfileDeleteClick() {

@@ -40,6 +40,69 @@ namespace ASP_421.Controllers
             return View(viewModel);
         }
 
+        [HttpPatch]
+        public JsonResult Update([FromBody] JsonElement json)
+        {
+            if(json.GetPropertyCount() == 0)
+            {
+                return Json(new
+                {
+                    Status = 400,
+                    Data = "Missing data to update"
+                });
+            }
+            // перевірити чи користувач авторизований
+            if (!(HttpContext.User.Identity?.IsAuthenticated ?? false))
+            {
+                return Json(new
+                {
+                    Status = 401,
+                    Data = "Unauthorized"
+                });
+            }
+
+            // визначити його ID та відшукати об'єкт БД
+            String id = HttpContext.User.Claims.First(c => c.Type == "Id").Value;
+
+            Data.Entities.User user = _dataContext
+                .Users
+                .Find(Guid.Parse(id))!;
+
+            if(json.TryGetProperty("Name", out JsonElement name))
+            {
+                user.Name = name.GetString()!;
+            }
+            if (json.TryGetProperty("Email", out JsonElement email))
+            {
+                user.Email = email.GetString()!;
+            }
+
+            // зберегти зміни у БД
+            _dataContext.SaveChanges();
+
+            return Json(new
+            {
+                Status = 200,
+                Data = "Ok"
+            });
+        }
+
+        [HttpDelete]
+        public JsonResult Delete()
+        {
+            // перевірити чи користувач авторизований
+            // визначити його ID та відшукати об'єкт БД
+            // видалити персональні дані (Name, Birthdate) - якщо можливо
+            //  то встановлюємо NULL, якщо ні - порожній об'єкт
+            // встановити дату видалення DeletedAt у поточний момент
+            // зберегти зміни у БД
+            return Json(new
+            {
+                Status = 200,
+                Data = "Ok"
+            });
+        }
+
         public JsonResult SignIn()
         {
             // Authorization: Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
