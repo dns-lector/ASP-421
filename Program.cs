@@ -2,6 +2,7 @@ using ASP_421.Data;
 using ASP_421.Middleware;
 using ASP_421.Services.Kdf;
 using ASP_421.Services.Random;
+using ASP_421.Services.Storage;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,7 @@ builder.Services.AddControllersWithViews();
 
 builder.Services.AddSingleton<IRandomService, DefaultRandomService>();
 builder.Services.AddSingleton<IKdfService, PbKdf1Service>();
+builder.Services.AddSingleton<IStorageService, DiskStorageService>();
 
 builder.Services.AddDbContext<DataContext>(options => 
     options.UseSqlServer(
@@ -22,7 +24,8 @@ builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromMinutes(15);
-    options.Cookie.HttpOnly = true;
+    options.Cookie.HttpOnly = true; 
+    options.Cookie.Name = ".ASP-421.Session";
     options.Cookie.IsEssential = true;
 });
 
