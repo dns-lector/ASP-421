@@ -18,6 +18,7 @@ builder.Services.AddDbContext<DataContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DataContext"))
 );
+builder.Services.AddScoped<DataAccessor>();
 
 builder.Services.AddDistributedMemoryCache();
 
