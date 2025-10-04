@@ -7,6 +7,87 @@ namespace ASP_421.Data
     {
         private readonly DataContext _dataContext = dataContext;
 
+        public void AddProductToCart(String userId, String productId)
+        {
+            Guid userGuid = Guid.Parse(userId);         // винятки від цих операцій
+            Guid productGuid = Guid.Parse(productId);   // передаватимуться до контролера
+            User user = _dataContext.Users.Find(userGuid)
+                ?? throw new KeyNotFoundException("User not found");
+            Product product = _dataContext.Products.Find(productGuid)
+                ?? throw new KeyNotFoundException("Product not found");
+            // Перевіряємо, чи є у користувача відкритий (активний) кошик
+            // Якщо ні, то відкриваємо (створюємо) новий
+            //   якщо так, то працюємо з відкритим
+            // Перевіряємо чи є у кошику позиція (Item) з даним товаром
+            // Якщо ні, то створюємо нову
+            //   якщо так, то додаємо +1 до цієї позиції
+            Cart? activeCart = _dataContext
+                .Carts
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .FirstOrDefault(c => 
+                c.UserId == userGuid &&
+                c.PaidAt == null && 
+                c.DeletedAt == null);
+
+            if (activeCart == null)
+            {
+                activeCart = new()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userGuid,
+                    CreatedAt = DateTime.Now,                    
+                };
+                _dataContext.Carts.Add(activeCart);
+            }
+
+            CartItem? cartItem = activeCart
+                .CartItems
+                .FirstOrDefault(ci => ci.ProductId == productGuid);
+
+            if (cartItem == null)
+            {
+                cartItem = new()
+                {
+                    CartId = activeCart.Id,
+                    ProductId = productGuid,
+                    Quantity = 1,
+                    Product = product,
+                };
+                _dataContext.CartItems.Add(cartItem);
+            }
+            else
+            {
+                cartItem.Quantity += 1;
+            }
+            // Перераховуємо ціну всього кошику з урахуванням можливих акцій
+            CalcCartPrice(activeCart);
+            // зберігаємо зміни
+            _dataContext.SaveChanges();
+        }
+
+        private void CalcCartPrice(Cart cart)
+        {
+            double price = 0.0;
+            foreach (var item in cart.CartItems)
+            {
+                if(item.DiscountItemId != null)
+                {
+                    // Тут буде перерахунок ціни позиції з урахуванням акції
+                }
+                else
+                {
+                    item.Price = item.Product.Price * item.Quantity;
+                }
+                price += item.Price;
+            }
+            if (cart.DiscountItemId != null)
+            {
+                // Тут буде перерахунок ціни кошику з урахуванням акції
+            }
+            cart.Price = price;
+        }
+
         public ProductGroup? GetProductGroupBySlug(String slug)
         {
             return _dataContext

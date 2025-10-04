@@ -27,4 +27,8 @@ function addToCartClick(e) {
     let btn = e.target.closest("[data-add-to-cart]");
     let productId = btn.getAttribute("data-add-to-cart");
     console.log(productId);
+
+    fetch("/api/cart/" + productId + "", {
+        method: "POST"
+    }).then(r => r.json()).then(console.log);
 }
