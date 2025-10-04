@@ -10,11 +10,25 @@ namespace ASP_421.Data
         public DbSet<Entities.UserRole> UserRoles { get; set; }
         public DbSet<Entities.ProductGroup> ProductGroups { get; set; }
         public DbSet<Entities.Product> Products { get; set; }
+        public DbSet<Entities.Cart> Carts { get; set; }
+        public DbSet<Entities.CartItem> CartItems { get; set; }
 
         public DataContext(DbContextOptions options) : base(options) { }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
+            modelBuilder.Entity<Entities.Cart>()
+                .HasMany(c => c.CartItems)
+                .WithOne(ci => ci.Cart);
+
+            modelBuilder.Entity<Entities.Cart>()
+                .HasOne(c => c.User)
+                .WithMany();
+
+            modelBuilder.Entity<Entities.CartItem>()
+                .HasOne(ci => ci.Product)
+                .WithMany();
+
             modelBuilder.ApplyConfiguration(new UserAccessConfiguration());
             modelBuilder.ApplyConfiguration(new UserRoleConfiguration());
             modelBuilder.ApplyConfiguration(new UserConfiguration());

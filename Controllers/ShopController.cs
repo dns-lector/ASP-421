@@ -20,9 +20,26 @@ namespace ASP_421.Controllers
 
         public IActionResult Group(String id)
         {
-            ViewData["id"] = id;
-            return View();
+            ShopGroupViewModel model = new()
+            {
+                Slug = id,
+                Group = _dataAccessor.GetProductGroupBySlug(id)
+            };
+            return View(model);
         }
+
+        public IActionResult Product(String id)
+        {
+            var product = _dataAccessor.GetProductBySlug(id);
+            ShopProductViewModel model = new()
+            {
+                SlugOrId = id,
+                Product = product,
+                Associations = product == null ? [] : product.Group.Products
+            };
+            return View(model);
+        }
+
 
         public IActionResult Admin()
         {

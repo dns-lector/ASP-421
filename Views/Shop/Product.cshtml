@@ -1,0 +1,40 @@
+﻿@model ASP_421.Models.Shop.ShopProductViewModel
+
+@if(Model.Product == null)
+{
+	<div class="alert alert-danger" role="alert">
+		Запитаного товару не існує або він був видалений
+	</div>
+}
+else
+{
+	<h1>Сторінка товару @Model.Product.Name</h1>
+
+	<div class="row">
+		<div class="col col-5">
+			<img src="/Storage/Item/@(Model.Product.ImageUrl)"
+				 alt="@Model.Product.Name"
+				 class="w-100" />
+		</div>
+		<div class="col col-6">
+			<h2>@Model.Product.Name</h2>
+			<p>@Model.Product.Description</p>
+			<h4>@Model.Product.Price.ToString("F2")</h4>
+			<button class="btn btn-success" 
+				data-add-to-cart="@Model.Product.Id">До кошику</button>
+		</div>
+		<div class="col col-1">
+			Тут може бути ваша реклама
+		</div>
+	</div>
+	<br/>
+	<br/>
+	<br/>
+	<h2>Вас також може зацікавити</h2>
+	<div class="row row-cols-6 g-4">
+		@foreach(var product in Model.Associations)
+		{
+			@Html.DisplayFor(m => product)
+		}
+	</div>
+}
