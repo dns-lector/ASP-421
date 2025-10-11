@@ -18,6 +18,21 @@ namespace ASP_421.Controllers
             return View(model);
         }
 
+        public IActionResult Cart(String? id)
+        {
+            // String? userId = HttpContext
+            //     .User
+            //     .Claims
+            //     .FirstOrDefault(c => c.Type == ClaimTypes.PrimarySid)
+            //     ?.Value;
+
+            ShopCartViewModel model = new()
+            {
+                Cart = HttpContext.Items["UserCart"] as Data.Entities.Cart,
+            };
+            return View(model);
+        }
+
         public IActionResult Group(String id)
         {
             ShopGroupViewModel model = new()

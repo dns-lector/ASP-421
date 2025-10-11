@@ -7,6 +7,55 @@ namespace ASP_421.Data
     {
         private readonly DataContext _dataContext = dataContext;
 
+        public Cart? GetActiveCart(String userId)
+        {
+            Guid userGuid = Guid.Parse(userId);
+            return _dataContext
+                .Carts
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .FirstOrDefault(c =>
+                c.UserId == userGuid &&
+                c.PaidAt == null &&
+                c.DeletedAt == null);
+        }
+
+        public void ModifyCartItem(String userId, String cartItemId, int inc)
+        {
+            Guid cartItemGuid = Guid.Parse(cartItemId);
+            Cart activeCart = this.GetActiveCart(userId)
+                ?? throw new Exception("User has no active cart");
+            CartItem cartItem = activeCart.CartItems
+                .FirstOrDefault(ci => ci.Id == cartItemGuid)
+                ?? throw new Exception("User has no requested cart item");
+            cartItem.Quantity += inc;
+            CalcCartPrice(activeCart);
+            _dataContext.SaveChanges();
+            /*
+             * Д.З. Забезпечити перевірку можливості зміни CartItem
+             * - нова кількість більша за ноль
+             *  = якщо менша за ноль, то це помилка - throw new Exception
+             *  = якщо дорівнює нулю, то позицію слід видалити замість
+             *     встановлення нульової кількості
+             * - нова кількість не перевищує складські залишки товару    
+             * 
+             * З боку фронтенда виводити повідомлення 
+             * - підтвердження видалення при натисканні "-", що призводитиме до 
+             *    нульової кількості
+             * - про недостатність товару на складі
+             * - про загальні помилки ("Сталась помилка, повторіть дію пізніше")
+             * 
+             * Реалізувати кнопку "х" видалення позиції на базі ModifyCartItem
+             * з передачею inc, що призведе до нульової кількості. Також
+             * додати повідомлення-погодження
+             * 
+             * Реалізувати перехід на картку товара при натисканні на його
+             * зображення у кошику (ліва позиція). У самій картці товару 
+             * також аналізувати його наявність у кошику та змінювати 
+             * кнопку "Додати до кошику" / "Перейти до кошику"
+             */
+        }
+
         public void AddProductToCart(String userId, String productId)
         {
             Guid userGuid = Guid.Parse(userId);         // винятки від цих операцій
@@ -21,14 +70,7 @@ namespace ASP_421.Data
             // Перевіряємо чи є у кошику позиція (Item) з даним товаром
             // Якщо ні, то створюємо нову
             //   якщо так, то додаємо +1 до цієї позиції
-            Cart? activeCart = _dataContext
-                .Carts
-                .Include(c => c.CartItems)
-                .ThenInclude(ci => ci.Product)
-                .FirstOrDefault(c => 
-                c.UserId == userGuid &&
-                c.PaidAt == null && 
-                c.DeletedAt == null);
+            Cart? activeCart = this.GetActiveCart(userId);
 
             if (activeCart == null)
             {

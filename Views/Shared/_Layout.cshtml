@@ -1,4 +1,6 @@
 ﻿@using System.Security.Claims
+@using ASP_421.Data.Entities
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -49,6 +51,7 @@
                             .Claims
                             .FirstOrDefault(c => c.Type == ClaimTypes.Role)
                             ?.Value;
+                        int cartCount = (Context.Items["UserCart"] as Cart)?.CartItems.Count() ?? 0;
                         <div>
                             @if(role == "Admin") 
                             {
@@ -57,6 +60,16 @@
                                    class="btn btn-outline-secondary text-decoration-none text-body"
                                    title="Панель управління"><i class="bi bi-speedometer2"></i></a>                            
                             }
+
+                            <a asp-controller="Shop"
+                                   asp-action="Cart"
+                                   class="cart-widget-button btn btn-outline-secondary text-decoration-none text-body"
+                                   title="Мій кошик">
+
+                                   <i class="bi bi-cart"></i>
+                                   <span class="cart-count">@cartCount</span>
+                            </a>
+                            
                             <a asp-controller="User"
                                asp-action="Profile"
                                asp-route-id="@login"

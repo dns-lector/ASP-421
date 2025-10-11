@@ -1,0 +1,65 @@
+﻿@model ASP_421.Models.Shop.ShopCartViewModel
+@{
+    ViewData["Title"] = "Cart";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Мій кошик</h1>
+</div>
+
+@if( ! (Context.User.Identity?.IsAuthenticated ?? false) ) 
+{
+    <div>
+        Перегляд кошику дозволений після входу до системи
+    </div>
+}
+else if(Model.Cart == null) 
+{
+    <div>
+        Запитаний кошик не знайдено
+    </div>
+}
+else if(Model.Cart.CartItems.Count() == 0)
+{
+    <div>
+        Кошик порожній, додавайте товари з 
+        <a asp-action="Index">крамниці</a>
+    </div>
+}
+else 
+{
+    <div class="row cart-table-header">
+        <div class="col col-6">Товар</div>
+        <div class="col col-1">Ціна</div>
+        <div class="col col-3">Кількість</div>
+        <div class="col col-1">Вартість</div>
+    </div>
+    foreach(var item in Model.Cart.CartItems) 
+    {
+        <div class="row border-bottom mb-2 pb-2">
+            <div class="col col-1">
+                <img class="w-100" src="/Storage/Item/@(item.Product.ImageUrl)" />
+            </div>
+            <div class="col col-5">
+                @item.Product.Name
+                <div class="text-muted">@item.Product.Description</div>
+            </div>
+            <div class="col col-1">@item.Product.Price</div>
+            <div class="col col-3" style="vertical-align: middle">
+                <i class="bi bi-arrow-down-circle" 
+                   style="font-size: 1.5rem; color: #bbb"
+                   role="button"
+                   data-cart-inc="-1"
+                   data-cart-item="@item.Id"></i>
+                <span class="rounded-circle border cart-quantity">@item.Quantity</span>
+                <i class="bi bi-arrow-up-circle" 
+                   style="font-size: 1.5rem; color: #bbb"
+                   role="button"
+                   data-cart-inc="1"
+                   data-cart-item="@item.Id"></i>
+            </div>
+            <div class="col col-1">@item.Price</div>
+            <div class="col col-1"><i class="bi bi-x-lg"></i></div>
+        </div>
+    }
+}

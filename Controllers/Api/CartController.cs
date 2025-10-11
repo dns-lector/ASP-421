@@ -11,6 +11,45 @@ namespace ASP_421.Controllers.Api
     {
         private readonly DataAccessor _dataAccessor = dataAccessor;
 
+        [HttpPatch("{id}")]
+        public object ModifyCartItem(String id, int inc)
+        {
+            // Перевірити чи запит авторизований
+            if (HttpContext.User.Identity?.IsAuthenticated ?? false)
+            {
+                // Вилучити дані про авторизацію з контексту HTTP
+                String userId = HttpContext.User.Claims
+                    .First(c => c.Type == ClaimTypes.PrimarySid).Value;
+                // Передати роботу на DataAccessor
+                try
+                {
+                    _dataAccessor.ModifyCartItem(userId, id, inc);
+                    return new
+                    {
+                        Code = 200,
+                        Status = "Ok"
+                    };
+                }
+                catch (Exception ex)
+                {
+                    return new
+                    {
+                        Code = 400,
+                        Status = "Error data validation",
+                        ex.Message,
+                    };
+                }
+            }
+            else
+            {
+                return new
+                {
+                    Code = 401,
+                    Status = "UnAuthorized"
+                };
+            }        
+        }
+
         [HttpPost("{id}")]
         public object AddProductToCart(String id)
         {

@@ -42,15 +42,13 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
 app.UseAuthorization();
-
 app.UseSession();
-
 app.MapStaticAssets();
 
 
 app.UseAuthSession();
+app.UseUserCart();
 
 
 app.MapControllerRoute(

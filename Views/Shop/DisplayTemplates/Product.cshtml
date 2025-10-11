@@ -1,4 +1,8 @@
 ﻿@model ASP_421.Data.Entities.Product
+@{
+    var Cart = Context.Items["UserCart"] as ASP_421.Data.Entities.Cart;
+    bool isInCart = Cart?.CartItems.Any(ci => ci.ProductId == Model.Id) ?? false;
+}
 
 <div class="col">
     <a class="h-100 nav-link" 
@@ -19,12 +23,21 @@
             <div class="card-footer d-flex justify-content-between align-items-center">
 				<span>₴ @Model.Price.ToString("F2")</span>
                 <span>
-                    <button 
-                        type="button" 
-                        class="btn btn-outline-success btn-add-to-cart"
-                        data-add-to-cart="@Model.Id">
-                        <i class="bi bi-cart-plus"></i>
-                    </button>
+                    @if(isInCart) {
+                        <button data-goto="cart"
+                           class="btn btn-success btn-add-to-cart">
+                           <i class="bi bi-cart-check"></i>
+                        </button>
+                    }
+                    else {
+                        <button 
+                            type="button" 
+                            class="btn btn-outline-success btn-add-to-cart"
+                            data-add-to-cart="@Model.Id">
+                            <i class="bi bi-cart-plus"></i>
+                        </button>
+                    }
+                    
                 </span>
             </div>
         </div>
