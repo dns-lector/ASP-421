@@ -24,6 +24,8 @@ namespace ASP_421.Controllers
             viewModel.User = _dataContext
                 .UserAccesses
                 .Include(ua => ua.User)
+                .ThenInclude(u => u.Carts)
+                .ThenInclude(c => c.CartItems)
                 .AsNoTracking()    
                 .FirstOrDefault(ua => ua.Login == id)
                 ?.User;

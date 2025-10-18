@@ -76,3 +76,9 @@ body {
     justify-content: center;
     align-items: center;
 }
+.cart-table-footer {
+    font-weight: 700;
+    background-color: #f8f8f8;
+    margin-bottom: .5em;
+    padding: .25em 0;
+}

@@ -20,6 +20,32 @@ namespace ASP_421.Data
                 c.DeletedAt == null);
         }
 
+        public Cart? GetCart(String id)
+        {
+            Guid cartGuid = Guid.Parse(id);
+            return _dataContext
+                .Carts
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .FirstOrDefault(c => c.Id == cartGuid);
+        }
+
+        public void CheckoutCart(String userId)
+        {
+            Cart activeCart = this.GetActiveCart(userId)
+                ?? throw new Exception("User has no active cart");
+            activeCart.PaidAt = DateTime.Now;
+            _dataContext.SaveChanges();
+        }
+
+        public void CancelCart(String userId)
+        {
+            Cart activeCart = this.GetActiveCart(userId)
+                ?? throw new Exception("User has no active cart");
+            activeCart.DeletedAt = DateTime.Now;
+            _dataContext.SaveChanges();
+        }
+
         public void ModifyCartItem(String userId, String cartItemId, int inc)
         {
             Guid cartItemGuid = Guid.Parse(cartItemId);
@@ -55,6 +81,74 @@ namespace ASP_421.Data
              * кнопку "Додати до кошику" / "Перейти до кошику"
              */
         }
+
+        public void RepeatCart(String userId, String cartId)
+        {
+            Guid userGuid = Guid.Parse(userId);
+            Guid cartGuid = Guid.Parse(cartId);
+            User user = _dataContext.Users.Find(userGuid)
+                ?? throw new KeyNotFoundException("User not found");
+            Cart cart = _dataContext
+                .Carts
+                .Include(c => c.CartItems)
+                .ThenInclude(ci => ci.Product)
+                .FirstOrDefault(c => c.Id == cartGuid)
+                ?? throw new KeyNotFoundException("Cart not found");
+            // Перевіряємо, чи є у користувача відкритий (активний) кошик
+            // Якщо ні, то відкриваємо (створюємо) новий
+            //   якщо так, то додаємо до нього товари з повторюваного кошику
+            Cart? activeCart = this.GetActiveCart(userId);
+
+            if (activeCart == null)
+            {
+                activeCart = new()
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = userGuid,
+                    CreatedAt = DateTime.Now,
+                };
+                _dataContext.Carts.Add(activeCart);
+            }
+            foreach (CartItem oldCartItem in cart.CartItems)
+            {
+                CartItem? cartItem = activeCart
+                .CartItems
+                .FirstOrDefault(ci => ci.ProductId == oldCartItem.ProductId);
+
+                if (cartItem == null)
+                {
+                    cartItem = new()
+                    {
+                        CartId = activeCart.Id,
+                        ProductId = oldCartItem.ProductId,
+                        Quantity = oldCartItem.Quantity,
+                        Product = oldCartItem.Product,
+                    };
+                    _dataContext.CartItems.Add(cartItem);
+                }
+                else
+                {
+                    cartItem.Quantity = oldCartItem.Quantity;
+                }
+            }
+            // Перераховуємо ціну всього кошику з урахуванням можливих акцій
+            CalcCartPrice(activeCart);
+            // зберігаємо зміни
+            _dataContext.SaveChanges();
+        }
+        /* Д.З. Удосконалити роботу сервісу повторення замовлення
+         * DataAccessor::RepeatCart
+         * - забезпечити перевірку того, що повторюване замовлення належить
+         *    тому ж користувачу, який ініціює дію
+         * - додати перевірку того, що товар не був видалений (у старому
+         *    кошику можуть бути замовлення, яких вже не існує)
+         * - додати перевірку того, що товар є у достатній кількості
+         * 
+         * Скорегувати роботу сервісу замовлення 
+         * DataAccessor::CheckoutCart
+         * - зменшувати кількості товарів у залишках (stock) на відповідні
+         *    кількості у замовленні
+         */
 
         public void AddProductToCart(String userId, String productId)
         {

@@ -26,7 +26,78 @@ document.addEventListener('DOMContentLoaded', () => {
     for (let btn of document.querySelectorAll('[data-cart-item]')) {
         btn.addEventListener('click', modifyCartItemClick);
     }
+
+    for (let btn of document.querySelectorAll('[data-cart-checkout]')) {
+        btn.addEventListener('click', checkoutCartClick);
+    }
+    for (let btn of document.querySelectorAll('[data-cart-cancel]')) {
+        btn.addEventListener('click', cancelCartClick);
+    }
+
+    for (let btn of document.querySelectorAll('[data-cart-repeat]')) {
+        btn.addEventListener('click', repeatCartClick);
+    }
+    for (let btn of document.querySelectorAll('[data-cart-restore]')) {
+        btn.addEventListener('click', restoreCartClick);
+    }
 });
+
+function repeatCartClick(e) {
+    e.preventDefault();
+    let btn = e.target.closest("[data-cart-repeat]");
+    let cartId = btn.getAttribute("data-cart-repeat");
+    if (confirm("Повторити замовлення?")) {
+        fetch("/api/cart/repeat/" + cartId, {
+            method: "POST"
+        }).then(r => r.json()).then(j => {
+            if (j.code == 200) {
+                window.location = "/Shop/Cart";
+            }
+            else {
+                alert("Виникла помилка. Повторіть дію пізніше");
+            }
+        });
+    }
+}
+
+function restoreCartClick(e) {
+    e.preventDefault();
+}
+
+function checkoutCartClick(e) {
+    e.preventDefault();
+    // let btn = e.target.closest("[data-cart-checkout]");
+    // let cartId = btn.getAttribute("data-cart-checkout");
+    if (confirm("Оформлюємо покупку?")) {
+        fetch("/api/cart", {
+            method: "PUT"
+        }).then(r => r.json()).then(j => {
+            if (j.code == 200) {
+                alert("Дякуємо за покупку!");
+                window.location = "/Shop";
+            }
+            else {
+                alert("Виникла помилка. Повторіть дію пізніше");
+            }
+        });
+    }
+}
+function cancelCartClick(e) {
+    e.preventDefault();
+    if (confirm("Скасувати покупку?")) {
+        fetch("/api/cart", {
+            method: "DELETE"
+        }).then(r => r.json()).then(j => {
+            if (j.code == 200) {
+                alert("Кошик видалено");
+                window.location = "/Shop";
+            }
+            else {
+                alert("Виникла помилка. Повторіть дію пізніше");
+            }
+        });
+    }
+}
 
 function modifyCartItemClick(e) {
     e.preventDefault();

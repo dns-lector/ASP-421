@@ -14,5 +14,8 @@ namespace ASP_421.Data.Entities
         // Inverse Navi props
         [JsonIgnore]
         public List<UserAccess> Accesses { get; set; } = new();
+
+        [JsonIgnore]
+        public ICollection<Cart> Carts { get; set; } = [];
     }
 }

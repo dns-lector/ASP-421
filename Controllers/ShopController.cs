@@ -28,7 +28,9 @@ namespace ASP_421.Controllers
 
             ShopCartViewModel model = new()
             {
-                Cart = HttpContext.Items["UserCart"] as Data.Entities.Cart,
+                Cart = id == null 
+                ? HttpContext.Items["UserCart"] as Data.Entities.Cart
+                : _dataAccessor.GetCart(id),
             };
             return View(model);
         }

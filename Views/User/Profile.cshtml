@@ -14,39 +14,78 @@
     </div>
 }
 else {
-    <div class="row mb-2">
-        <div class="col text-end">
-            <strong>Ім'я:</strong>
-        </div>
-        <div class="col text-start" data-editable="Name">
-            @Model.User.Name
-		</div>
-    </div>
-    <div class="row mb-2">
-        <div class="col text-end">
-            <strong>E-mail:</strong>
-        </div>
-        <div class="col text-start" data-editable="Email">
-            @Model.User.Email
-		</div>
-    </div>
-    if(Model.IsPersonal)
-    {
-        <div class="row mb-2">
-            <div class="col text-end">
-                <strong>Дата народження:</strong>
-            </div>
-            <div class="col text-start">
-				@Model.User.Birthdate?.ToString("dd.MM.yyyy")
-            </div>
-        </div>
+    <div class="row">
+        <div class="col">
+			<h2>Особисті дані</h2>
+			<div class="row mb-2">
+				<div class="col text-end">
+					<strong>Ім'я:</strong>
+				</div>
+				<div class="col text-start" data-editable="Name">
+					@Model.User.Name
+				</div>
+			</div>
+			<div class="row mb-2">
+				<div class="col text-end">
+					<strong>E-mail:</strong>
+				</div>
+				<div class="col text-start" data-editable="Email">
+					@Model.User.Email
+				</div>
+			</div>
+			@if(Model.IsPersonal)
+			{
+			<div class="row mb-2">
+				<div class="col text-end">
+					<strong>Дата народження:</strong>
+				</div>
+				<div class="col text-start">
+					@Model.User.Birthdate?.ToString("dd.MM.yyyy")
+				</div>
+			</div>
 
-		<div class="row">
-			<div class="col text-end"><button id="btn-profile-delete" class="btn btn-danger">Delete</button></div>
-			<div class="col text-start"><button id="btn-profile-edit" class="btn btn-warning">Edit</button></div>
-        </div>
+			<div class="row">
+				<div class="col text-end"><button id="btn-profile-delete" class="btn btn-danger">Delete</button></div>
+				<div class="col text-start"><button id="btn-profile-edit" class="btn btn-warning">Edit</button></div>
+			</div>
 
-    }
+			}
+        
+		</div>
+        <div class="col">
+			<h2>Історія покупок</h2>
+			<div class="row  cart-table-header">
+				<div class="col">Дата створення</div>
+				<div class="col">Позицій</div>
+				<div class="col">Вартість</div>
+				<div class="col col-1">Статус</div>
+			</div>
+			@foreach(var cart in Model.User.Carts.OrderByDescending(c => c.CreatedAt))
+			{
+				<a asp-controller="Shop" asp-action="Cart" asp-route-id="@cart.Id">
+					<div class="row border-bottom mb-2 pb-2">
+						<div class="col">@cart.CreatedAt</div>
+						<div class="col">@cart.CartItems.Count</div>
+						<div class="col">@cart.Price</div>
+						<div class="col col-1">
+							@if(cart.PaidAt != null)
+							{
+								<i class="bi bi-check2-circle"></i>
+							}
+							else if (cart.DeletedAt != null)
+							{
+								<i class="bi bi-trash3"></i>
+							}
+							else
+							{
+								<i class="bi bi-cart"></i>
+							}
+						</div>
+					</div>
+				</a>
+			}
+		</div>
+    </div>    
 }
 @*
     ТЗ по оновленню персональних даних користувача
